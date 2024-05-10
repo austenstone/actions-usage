@@ -36,7 +36,7 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: austenstone/actions-usage@main
+      - uses: austenstone/actions-usage@v1
         id: usage
       - run: echo "Total usage: ${{ steps.usage.outputs.total }}"
       - if: ${{ steps.usage.outputs.total > 50000 }}
@@ -62,7 +62,7 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: austenstone/actions-usage@main
+      - uses: austenstone/actions-usage@v1
         id: usage
       - name: Post to a Slack channel
         if: ${{ steps.usage.outputs.total > 50000 }}
