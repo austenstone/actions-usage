@@ -5,29 +5,40 @@ This repository serves as a [template](https://docs.github.com/en/repositories/c
 ## Usage
 Create a workflow (eg: `.github/workflows/seat-count.yml`). See [Creating a Workflow file](https://help.github.com/en/articles/configuring-a-workflow#creating-a-workflow-file).
 
-<!-- 
-### PAT(Personal Access Token)
+#### Token
 
-You will need to [create a PAT(Personal Access Token)](https://github.com/settings/tokens/new?scopes=admin:org) that has `admin:org` access.
+Anyone with read access to the repository can use this endpoint.
 
-Add this PAT as a secret so we can use it as input `github-token`, see [Creating encrypted secrets for a repository](https://docs.github.com/en/enterprise-cloud@latest/actions/security-guides/encrypted-secrets#creating-encrypted-secrets-for-a-repository). 
-### Organizations
+Personal access tokens (classic) need the `repo` scope to use this endpoint with a private repository.
 
-If your organization has SAML enabled you must authorize the PAT, see [Authorizing a personal access token for use with SAML single sign-on](https://docs.github.com/en/enterprise-cloud@latest/authentication/authenticating-with-saml-single-sign-on/authorizing-a-personal-access-token-for-use-with-saml-single-sign-on).
--->
+##### Fine-grained access tokens for "Get workflow usage"
+
+This endpoint works with the following token types:
+
+* GitHub App user access tokens
+* GitHub App installation access tokens
+* Fine-grained personal access tokens
+
+The token must have the following permission set:
+
+* `actions:read`
+
+This endpoint can be used without authentication or the aforementioned permissions if only public resources are requested.
 
 #### Example
 ```yml
 name: TypeScript Action Workflow
 on:
-  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
 
 jobs:
   run:
     name: Run Action
     runs-on: ubuntu-latest
     steps:
-      - uses: austenstone/action-typescript@main
+      - uses: austenstone/actions-usage@main
+        id: usage
 ```
 
 ## ➡️ Inputs
@@ -36,13 +47,16 @@ Various inputs are defined in [`action.yml`](action.yml):
 | Name | Description | Default |
 | --- | - | - |
 | github&#x2011;token | Token to use to authorize. | ${{&nbsp;github.token&nbsp;}} |
+| workflow | The workflow file name or id. | `main.yml` |
 
-<!-- 
 ## ⬅️ Outputs
 | Name | Description |
 | --- | - |
-| output | The output. |
--->
+| ubuntu | The usage in minutes for Ubuntu |
+| macos | The usage in minutes for macOS |
+| windows | The usage in minutes for Windows |
+| total | The total usage in minutes |
+
 
 ## Further help
 To get more help on the Actions see [documentation](https://docs.github.com/en/actions).
