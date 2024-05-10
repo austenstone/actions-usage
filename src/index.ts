@@ -33,7 +33,7 @@ export const run = async (): Promise<void> => {
     workflowsIds = input.workflows.split(",").map((workflow) => workflow.trim());
   } else {
     const { data: workflows } = await octokit.rest.actions.listRepoWorkflows(ownerRepo);
-    workflowsIds = workflows.workflows.map((workflow) => workflow.name);
+    workflowsIds = workflows.workflows.map((workflow) => workflow.id);
   }
   info(`Getting usage for workflows: ${workflowsIds.join(", ")}`);
 
@@ -43,15 +43,17 @@ export const run = async (): Promise<void> => {
         ...ownerRepo,
         workflow_id: workflowsId,
       });
-      
-      if (usage.billable.UBUNTU && data.billable.UBUNTU) {
-        usage.billable.UBUNTU.total_ms += data.billable.UBUNTU.total_ms || 0;
-      }
-      if (usage.billable.MACOS && data.billable.MACOS) {
-        usage.billable.MACOS.total_ms += data.billable.MACOS.total_ms || 0;
-      }
-      if (usage.billable.WINDOWS && data.billable.WINDOWS) {
-        usage.billable.WINDOWS.total_ms += data.billable.WINDOWS.total_ms || 0;
+
+      if (usage.billable) {
+        if (usage.billable.UBUNTU && data.billable.UBUNTU) {
+          usage.billable.UBUNTU.total_ms += data.billable.UBUNTU.total_ms || 0;
+        }
+        if (usage.billable.MACOS && data.billable.MACOS) {
+          usage.billable.MACOS.total_ms += data.billable.MACOS.total_ms || 0;
+        }
+        if (usage.billable.WINDOWS && data.billable.WINDOWS) {
+          usage.billable.WINDOWS.total_ms += data.billable.WINDOWS.total_ms || 0;
+        }
       }
     } catch (err) {
       info(`Error getting usage for workflows: ${workflowsId}`);

@@ -29156,7 +29156,7 @@ const run = async () => {
     }
     else {
         const { data: workflows } = await octokit.rest.actions.listRepoWorkflows(ownerRepo);
-        workflowsIds = workflows.workflows.map((workflow) => workflow.name);
+        workflowsIds = workflows.workflows.map((workflow) => workflow.id);
     }
     (0, core_1.info)(`Getting usage for workflows: ${workflowsIds.join(", ")}`);
     for (const workflowsId of workflowsIds) {
@@ -29165,14 +29165,16 @@ const run = async () => {
                 ...ownerRepo,
                 workflow_id: workflowsId,
             });
-            if (usage.billable.UBUNTU && data.billable.UBUNTU) {
-                usage.billable.UBUNTU.total_ms += data.billable.UBUNTU.total_ms || 0;
-            }
-            if (usage.billable.MACOS && data.billable.MACOS) {
-                usage.billable.MACOS.total_ms += data.billable.MACOS.total_ms || 0;
-            }
-            if (usage.billable.WINDOWS && data.billable.WINDOWS) {
-                usage.billable.WINDOWS.total_ms += data.billable.WINDOWS.total_ms || 0;
+            if (usage.billable) {
+                if (usage.billable.UBUNTU && data.billable.UBUNTU) {
+                    usage.billable.UBUNTU.total_ms += data.billable.UBUNTU.total_ms || 0;
+                }
+                if (usage.billable.MACOS && data.billable.MACOS) {
+                    usage.billable.MACOS.total_ms += data.billable.MACOS.total_ms || 0;
+                }
+                if (usage.billable.WINDOWS && data.billable.WINDOWS) {
+                    usage.billable.WINDOWS.total_ms += data.billable.WINDOWS.total_ms || 0;
+                }
             }
         }
         catch (err) {
