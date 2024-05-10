@@ -1,13 +1,16 @@
-import { getInput, info } from "@actions/core";
-import { getOctokit } from "@actions/github";
+import { getInput, info, setOutput } from "@actions/core";
+import { getOctokit, context } from "@actions/github";
+import { RestEndpointMethodTypes } from "@actions/github/node_modules/@octokit/plugin-rest-endpoint-methods";
 
 interface Input {
   token: string;
+  workflows: string;
 }
 
 const getInputs = (): Input => {
   const result = {} as Input;
   result.token = getInput("github-token");
+  result.workflows = getInput("workflows");
   if (!result.token || result.token === "") {
     throw new Error("github-token is required");
   }
@@ -18,11 +21,41 @@ export const run = async (): Promise<void> => {
   const input = getInputs();
   const octokit = getOctokit(input.token);
 
-  const {
-    data: { login },
-  } = await octokit.rest.users.getAuthenticated();
+  const ownerRepo = {
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+  };
 
-  info(`Hello, ${login}!`);
+  type Usage = RestEndpointMethodTypes["actions"]["getWorkflowRunUsage"]["response"]["data"];
+  let usage: Usage = {} as Usage;
+  let workflowsIds: (string | number)[] = [];
+  if (input.workflows) {
+    workflowsIds = input.workflows.split(",").map((workflow) => workflow.trim());
+  } else {
+    const { data: workflows } = await octokit.rest.actions.listRepoWorkflows(ownerRepo);
+    workflowsIds = workflows.workflows.map((workflow) => workflow.name);
+  }
+  info(`Getting usage for workflows: ${workflowsIds.join(", ")}`);
+
+  for (const workflowsId of workflowsIds) {
+    const { data } = await octokit.rest.actions.getWorkflowUsage({
+      ...ownerRepo,
+      workflow_id: workflowsId,
+    });
+    if (usage.billable.UBUNTU && data.billable.UBUNTU) {
+      usage.billable.UBUNTU.total_ms += data.billable.UBUNTU.total_ms || 0;
+    }
+    if (usage.billable.MACOS && data.billable.MACOS) {
+      usage.billable.MACOS.total_ms += data.billable.MACOS.total_ms || 0;
+    }
+    if (usage.billable.WINDOWS && data.billable.WINDOWS) {
+      usage.billable.WINDOWS.total_ms += data.billable.WINDOWS.total_ms || 0;
+    }
+  }
+
+  setOutput("UBUNTU", usage.billable.UBUNTU?.total_ms || 0);
+  setOutput("MACOS", usage.billable.MACOS?.total_ms || 0);
+  setOutput("WINDOWS", usage.billable.WINDOWS?.total_ms || 0);
 };
 
 run();
