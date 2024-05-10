@@ -1,4 +1,4 @@
-import { getInput, info, error, setOutput } from "@actions/core";
+import { getInput, info, error, setOutput, startGroup, endGroup, } from "@actions/core";
 import { getOctokit, context } from "@actions/github";
 
 interface Input {
@@ -36,6 +36,7 @@ export const run = async (): Promise<void> => {
       WINDOWS: {
         total_ms: 0,
       },
+      total_ms: 0
     },
   };
   let workflowsIds: (string | number)[] = [];
@@ -45,7 +46,7 @@ export const run = async (): Promise<void> => {
     const { data: workflows } = await octokit.rest.actions.listRepoWorkflows(ownerRepo);
     workflowsIds = workflows.workflows.map((workflow) => workflow.id);
   }
-  info(`Getting usage for workflows: ${workflowsIds.join(", ")}`);
+  info(`Getting usage for ${workflowsIds.length} workflows...`);
 
   for (const workflowsId of workflowsIds) {
     try {
@@ -54,18 +55,36 @@ export const run = async (): Promise<void> => {
         workflow_id: workflowsId,
       });
 
-      usage.billable.UBUNTU.total_ms += data.billable?.UBUNTU?.total_ms || 0;
-      usage.billable.MACOS.total_ms += data.billable?.MACOS?.total_ms || 0;
-      usage.billable.WINDOWS.total_ms += data.billable?.WINDOWS?.total_ms || 0;
+      const _usage = [
+        data.billable?.UBUNTU?.total_ms,
+        data.billable?.MACOS?.total_ms,
+        data.billable?.WINDOWS?.total_ms
+      ].map((usage) => usage || 0)
+      const total = _usage.reduce((acc, curr) => acc + curr, 0);
+      usage.billable.UBUNTU.total_ms += _usage[0];
+      usage.billable.MACOS.total_ms += _usage[1];
+      usage.billable.WINDOWS.total_ms += _usage[2];
+      usage.billable.total_ms += total;
+      startGroup(`Workflow: ${workflowsId} - ${total} ms`);
+      info(`Ubuntu: ${data.billable?.UBUNTU?.total_ms || 0}`);
+      info(`MacOS: ${data.billable?.MACOS?.total_ms || 0}`);
+      info(`Windows: ${data.billable?.WINDOWS?.total_ms || 0}`);
+      endGroup();
     } catch (err) {
       info(`Error getting usage for workflows: ${workflowsId}`);
       error(JSON.stringify(err));
     }
   }
 
-  setOutput("UBUNTU", usage.billable.UBUNTU.total_ms);
-  setOutput("MACOS", usage.billable.MACOS.total_ms);
-  setOutput("WINDOWS", usage.billable.WINDOWS.total_ms);
+  info(`✅ Completed!`);
+  info(`Total Ubuntu: ${usage.billable.UBUNTU.total_ms}`);
+  info(`Total MacOS: ${usage.billable.MACOS.total_ms}`);
+  info(`Total Windows: ${usage.billable.WINDOWS.total_ms}`);
+  info(`Total: ${usage.billable.total_ms}`);
+  setOutput("ubuntu", usage.billable.UBUNTU.total_ms);
+  setOutput("macos", usage.billable.MACOS.total_ms);
+  setOutput("windows", usage.billable.WINDOWS.total_ms);
+  setOutput("total", usage.billable.total_ms);
 };
 
 run();

@@ -29160,6 +29160,7 @@ const run = async () => {
             WINDOWS: {
                 total_ms: 0,
             },
+            total_ms: 0
         },
     };
     let workflowsIds = [];
@@ -29170,25 +29171,43 @@ const run = async () => {
         const { data: workflows } = await octokit.rest.actions.listRepoWorkflows(ownerRepo);
         workflowsIds = workflows.workflows.map((workflow) => workflow.id);
     }
-    (0, core_1.info)(`Getting usage for workflows: ${workflowsIds.join(", ")}`);
+    (0, core_1.info)(`Getting usage for ${workflowsIds.length} workflows...`);
     for (const workflowsId of workflowsIds) {
         try {
             const { data } = await octokit.rest.actions.getWorkflowUsage({
                 ...ownerRepo,
                 workflow_id: workflowsId,
             });
-            usage.billable.UBUNTU.total_ms += data.billable?.UBUNTU?.total_ms || 0;
-            usage.billable.MACOS.total_ms += data.billable?.MACOS?.total_ms || 0;
-            usage.billable.WINDOWS.total_ms += data.billable?.WINDOWS?.total_ms || 0;
+            const _usage = [
+                data.billable?.UBUNTU?.total_ms,
+                data.billable?.MACOS?.total_ms,
+                data.billable?.WINDOWS?.total_ms
+            ].map((usage) => usage || 0);
+            const total = _usage.reduce((acc, curr) => acc + curr, 0);
+            usage.billable.UBUNTU.total_ms += _usage[0];
+            usage.billable.MACOS.total_ms += _usage[1];
+            usage.billable.WINDOWS.total_ms += _usage[2];
+            usage.billable.total_ms += total;
+            (0, core_1.startGroup)(`Workflow: ${workflowsId} - ${total} ms`);
+            (0, core_1.info)(`Ubuntu: ${data.billable?.UBUNTU?.total_ms || 0}`);
+            (0, core_1.info)(`MacOS: ${data.billable?.MACOS?.total_ms || 0}`);
+            (0, core_1.info)(`Windows: ${data.billable?.WINDOWS?.total_ms || 0}`);
+            (0, core_1.endGroup)();
         }
         catch (err) {
             (0, core_1.info)(`Error getting usage for workflows: ${workflowsId}`);
             (0, core_1.error)(JSON.stringify(err));
         }
     }
-    (0, core_1.setOutput)("UBUNTU", usage.billable.UBUNTU.total_ms);
-    (0, core_1.setOutput)("MACOS", usage.billable.MACOS.total_ms);
-    (0, core_1.setOutput)("WINDOWS", usage.billable.WINDOWS.total_ms);
+    (0, core_1.info)(`✅ Completed!`);
+    (0, core_1.info)(`Total Ubuntu: ${usage.billable.UBUNTU.total_ms}`);
+    (0, core_1.info)(`Total MacOS: ${usage.billable.MACOS.total_ms}`);
+    (0, core_1.info)(`Total Windows: ${usage.billable.WINDOWS.total_ms}`);
+    (0, core_1.info)(`Total: ${usage.billable.total_ms}`);
+    (0, core_1.setOutput)("ubuntu", usage.billable.UBUNTU.total_ms);
+    (0, core_1.setOutput)("macos", usage.billable.MACOS.total_ms);
+    (0, core_1.setOutput)("windows", usage.billable.WINDOWS.total_ms);
+    (0, core_1.setOutput)("total", usage.billable.total_ms);
 };
 exports.run = run;
 (0, exports.run)();

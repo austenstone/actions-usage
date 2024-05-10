@@ -11,6 +11,16 @@ inputs:
     default: ${{ github.token }}
     required: false
 
+outputs:
+  ubuntu:
+    description: The usage of Ubuntu in milliseconds
+  macos:
+    description: The usage of macOS in milliseconds
+  windows:
+    description: The usage of Windows in milliseconds
+  total:
+    description: The total usage in milliseconds
+
 runs:
   using: "node20"
   main: "dist/index.js"
