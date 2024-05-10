@@ -29149,7 +29149,19 @@ const run = async () => {
         owner: github_1.context.repo.owner,
         repo: github_1.context.repo.repo,
     };
-    let usage = {};
+    let usage = {
+        billable: {
+            UBUNTU: {
+                total_ms: 0,
+            },
+            MACOS: {
+                total_ms: 0,
+            },
+            WINDOWS: {
+                total_ms: 0,
+            },
+        },
+    };
     let workflowsIds = [];
     if (input.workflows) {
         workflowsIds = input.workflows.split(",").map((workflow) => workflow.trim());
@@ -29165,26 +29177,18 @@ const run = async () => {
                 ...ownerRepo,
                 workflow_id: workflowsId,
             });
-            if (usage.billable) {
-                if (usage.billable.UBUNTU && data.billable.UBUNTU) {
-                    usage.billable.UBUNTU.total_ms += data.billable.UBUNTU.total_ms || 0;
-                }
-                if (usage.billable.MACOS && data.billable.MACOS) {
-                    usage.billable.MACOS.total_ms += data.billable.MACOS.total_ms || 0;
-                }
-                if (usage.billable.WINDOWS && data.billable.WINDOWS) {
-                    usage.billable.WINDOWS.total_ms += data.billable.WINDOWS.total_ms || 0;
-                }
-            }
+            usage.billable.UBUNTU.total_ms += data.billable?.UBUNTU?.total_ms || 0;
+            usage.billable.MACOS.total_ms += data.billable?.MACOS?.total_ms || 0;
+            usage.billable.WINDOWS.total_ms += data.billable?.WINDOWS?.total_ms || 0;
         }
         catch (err) {
             (0, core_1.info)(`Error getting usage for workflows: ${workflowsId}`);
             (0, core_1.error)(JSON.stringify(err));
         }
     }
-    (0, core_1.setOutput)("UBUNTU", usage.billable?.UBUNTU?.total_ms || 0);
-    (0, core_1.setOutput)("MACOS", usage.billable?.MACOS?.total_ms || 0);
-    (0, core_1.setOutput)("WINDOWS", usage.billable?.WINDOWS?.total_ms || 0);
+    (0, core_1.setOutput)("UBUNTU", usage.billable.UBUNTU.total_ms);
+    (0, core_1.setOutput)("MACOS", usage.billable.MACOS.total_ms);
+    (0, core_1.setOutput)("WINDOWS", usage.billable.WINDOWS.total_ms);
 };
 exports.run = run;
 (0, exports.run)();
