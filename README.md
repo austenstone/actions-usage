@@ -1,6 +1,6 @@
-# Action
+# Actions Usage Action
 
-This repository serves as a [template](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template) for TypeScript [Actions](https://docs.github.com/en/actions).
+Get your GitHub Actions usage in minutes.
 
 ## Usage
 Create a workflow (eg: `.github/workflows/seat-count.yml`). See [Creating a Workflow file](https://help.github.com/en/articles/configuring-a-workflow#creating-a-workflow-file).
@@ -85,7 +85,7 @@ Various inputs are defined in [`action.yml`](action.yml):
 | Name | Description | Default |
 | --- | - | - |
 | github&#x2011;token | Token to use to authorize. | ${{&nbsp;github.token&nbsp;}} |
-| workflow | The workflow file name or id. | `main.yml` |
+| workflow | The workflow file name or id. | main.yml |
 
 ## ⬅️ Outputs
 | Name | Description |
