@@ -28,6 +28,10 @@ outputs:
     description: The usage of Windows in milliseconds
   total:
     description: The total usage in milliseconds
+  included_minutes:
+    description: The minutes included in your plan
+  total_paid_minutes_used:
+    description: The total paid minutes used (for prepaid)
 
 runs:
   using: "node20"
