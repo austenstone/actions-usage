@@ -107,6 +107,9 @@ jobs:
     steps:
       - uses: austenstone/actions-usage@v1
         id: usage
+        with:
+          github-token: ${{ secrets.TOKEN }}
+          org: ${{ vars.ORG }}
   run:
     runs-on: ${{ steps.get-usage.outputs.total > 50000 ? 'my-self-hosted-runner' : 'ubuntu-latest' }}
     needs: get-usage
