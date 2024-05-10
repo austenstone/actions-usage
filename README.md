@@ -7,9 +7,10 @@ Create a workflow (eg: `.github/workflows/seat-count.yml`). See [Creating a Work
 
 #### Token
 
-Anyone with read access to the repository can use this endpoint.
+Anyone with read access to the repository can use this endpoint. 
+The `GITHUB_TOKEN` will work for repo level usage.
 
-Personal access tokens (classic) need the `repo` scope to use this endpoint with a private repository.
+Personal access tokens (classic) need the `repo` scope to use this endpoint with a private repository. Organization's will need the `repo` or `admin:org` scope to use this endpoint.
 
 ##### Fine-grained access tokens for "Get workflow usage"
 
@@ -23,7 +24,7 @@ The token must have the following permission set:
 
 If getting the usage for an organization:
 
-* organization_administration:read
+* `organization_administration:read`
 
 If getting the usage for a repository:
 
