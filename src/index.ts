@@ -16,6 +16,10 @@ const getInputs = (): Input => {
   return result;
 }
 
+const msToMinutes = (ms: number | undefined): number => {
+  return ms ? Math.floor(ms / 1000 / 60) : 0;
+}
+
 export const run = async (): Promise<void> => {
   const input = getInputs();
   const octokit = getOctokit(input.token);
@@ -46,7 +50,7 @@ export const run = async (): Promise<void> => {
     const { data: workflows } = await octokit.rest.actions.listRepoWorkflows(ownerRepo);
     workflowsIds = workflows.workflows.map((workflow) => workflow.id);
   }
-  info(`Getting usage for ${workflowsIds.length} workflows...`);
+  info(`Getting usage for ${workflowsIds.length} workflows (in minutes)...`);
 
   for (const workflowsId of workflowsIds) {
     try {
@@ -65,10 +69,10 @@ export const run = async (): Promise<void> => {
       usage.billable.MACOS.total_ms += _usage[1];
       usage.billable.WINDOWS.total_ms += _usage[2];
       usage.billable.total_ms += total;
-      startGroup(`Workflow: ${workflowsId} - ${total} ms`);
-      info(`Ubuntu: ${data.billable?.UBUNTU?.total_ms || 0}`);
-      info(`MacOS: ${data.billable?.MACOS?.total_ms || 0}`);
-      info(`Windows: ${data.billable?.WINDOWS?.total_ms || 0}`);
+      startGroup(`Workflow: ${workflowsId} - ${msToMinutes(total)}`);
+      info(`Ubuntu: ${msToMinutes(data.billable?.UBUNTU?.total_ms) || 0}`);
+      info(`MacOS: ${msToMinutes(data.billable?.MACOS?.total_ms) || 0}`);
+      info(`Windows: ${msToMinutes(data.billable?.WINDOWS?.total_ms) || 0}`);
       endGroup();
     } catch (err) {
       info(`Error getting usage for workflows: ${workflowsId}`);
@@ -77,14 +81,14 @@ export const run = async (): Promise<void> => {
   }
 
   info(`✅ Completed!`);
-  info(`Total Ubuntu: ${usage.billable.UBUNTU.total_ms}`);
-  info(`Total MacOS: ${usage.billable.MACOS.total_ms}`);
-  info(`Total Windows: ${usage.billable.WINDOWS.total_ms}`);
-  info(`Total: ${usage.billable.total_ms}`);
-  setOutput("ubuntu", usage.billable.UBUNTU.total_ms);
-  setOutput("macos", usage.billable.MACOS.total_ms);
-  setOutput("windows", usage.billable.WINDOWS.total_ms);
-  setOutput("total", usage.billable.total_ms);
+  info(`Total Ubuntu: ${msToMinutes(usage.billable.UBUNTU.total_ms)}`);
+  info(`Total MacOS: ${msToMinutes(usage.billable.MACOS.total_ms)}`);
+  info(`Total Windows: ${msToMinutes(usage.billable.WINDOWS.total_ms)}`);
+  info(`Total: ${msToMinutes(usage.billable.total_ms)}`);
+  setOutput("ubuntu", msToMinutes(usage.billable.UBUNTU.total_ms));
+  setOutput("macos", msToMinutes(usage.billable.MACOS.total_ms));
+  setOutput("windows", msToMinutes(usage.billable.WINDOWS.total_ms));
+  setOutput("total", msToMinutes(usage.billable.total_ms));
 };
 
 run();

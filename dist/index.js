@@ -29142,6 +29142,9 @@ const getInputs = () => {
     }
     return result;
 };
+const msToMinutes = (ms) => {
+    return ms ? Math.floor(ms / 1000 / 60) : 0;
+};
 const run = async () => {
     const input = getInputs();
     const octokit = (0, github_1.getOctokit)(input.token);
@@ -29188,10 +29191,10 @@ const run = async () => {
             usage.billable.MACOS.total_ms += _usage[1];
             usage.billable.WINDOWS.total_ms += _usage[2];
             usage.billable.total_ms += total;
-            (0, core_1.startGroup)(`Workflow: ${workflowsId} - ${total} ms`);
-            (0, core_1.info)(`Ubuntu: ${data.billable?.UBUNTU?.total_ms || 0}`);
-            (0, core_1.info)(`MacOS: ${data.billable?.MACOS?.total_ms || 0}`);
-            (0, core_1.info)(`Windows: ${data.billable?.WINDOWS?.total_ms || 0}`);
+            (0, core_1.startGroup)(`Workflow: ${workflowsId} - ${msToMinutes(total)} ms`);
+            (0, core_1.info)(`Ubuntu: ${msToMinutes(data.billable?.UBUNTU?.total_ms) || 0}`);
+            (0, core_1.info)(`MacOS: ${msToMinutes(data.billable?.MACOS?.total_ms) || 0}`);
+            (0, core_1.info)(`Windows: ${msToMinutes(data.billable?.WINDOWS?.total_ms) || 0}`);
             (0, core_1.endGroup)();
         }
         catch (err) {
@@ -29200,14 +29203,14 @@ const run = async () => {
         }
     }
     (0, core_1.info)(`✅ Completed!`);
-    (0, core_1.info)(`Total Ubuntu: ${usage.billable.UBUNTU.total_ms}`);
-    (0, core_1.info)(`Total MacOS: ${usage.billable.MACOS.total_ms}`);
-    (0, core_1.info)(`Total Windows: ${usage.billable.WINDOWS.total_ms}`);
-    (0, core_1.info)(`Total: ${usage.billable.total_ms}`);
-    (0, core_1.setOutput)("ubuntu", usage.billable.UBUNTU.total_ms);
-    (0, core_1.setOutput)("macos", usage.billable.MACOS.total_ms);
-    (0, core_1.setOutput)("windows", usage.billable.WINDOWS.total_ms);
-    (0, core_1.setOutput)("total", usage.billable.total_ms);
+    (0, core_1.info)(`Total Ubuntu: ${msToMinutes(usage.billable.UBUNTU.total_ms)}`);
+    (0, core_1.info)(`Total MacOS: ${msToMinutes(usage.billable.MACOS.total_ms)}`);
+    (0, core_1.info)(`Total Windows: ${msToMinutes(usage.billable.WINDOWS.total_ms)}`);
+    (0, core_1.info)(`Total: ${msToMinutes(usage.billable.total_ms)}`);
+    (0, core_1.setOutput)("ubuntu", msToMinutes(usage.billable.UBUNTU.total_ms));
+    (0, core_1.setOutput)("macos", msToMinutes(usage.billable.MACOS.total_ms));
+    (0, core_1.setOutput)("windows", msToMinutes(usage.billable.WINDOWS.total_ms));
+    (0, core_1.setOutput)("total", msToMinutes(usage.billable.total_ms));
 };
 exports.run = run;
 (0, exports.run)();
