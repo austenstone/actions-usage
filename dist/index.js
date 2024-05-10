@@ -29136,6 +29136,15 @@ const github_1 = __nccwpck_require__(5438);
 const getInputs = () => {
     const result = {};
     result.token = (0, core_1.getInput)("github-token");
+    result.org = (0, core_1.getInput)("org");
+    result.repo = (0, core_1.getInput)("repo");
+    if (!result.org && result.repo.includes("/")) {
+        const parts = result.repo.split("/");
+        result.repo = parts[1];
+    }
+    else {
+        result.repo = null;
+    }
     result.workflows = (0, core_1.getInput)("workflows");
     if (!result.token || result.token === "") {
         throw new Error("github-token is required");
@@ -29148,10 +29157,6 @@ const msToMinutes = (ms) => {
 const run = async () => {
     const input = getInputs();
     const octokit = (0, github_1.getOctokit)(input.token);
-    const ownerRepo = {
-        owner: github_1.context.repo.owner,
-        repo: github_1.context.repo.repo,
-    };
     let usage = {
         billable: {
             UBUNTU: {
@@ -29163,54 +29168,81 @@ const run = async () => {
             WINDOWS: {
                 total_ms: 0,
             },
-            total_ms: 0
+            total_ms: 0,
+            included_minutes: 0,
+            total_paid_minutes_used: 0,
         },
     };
-    let workflowsIds = [];
-    if (input.workflows) {
-        workflowsIds = input.workflows.split(",").map((workflow) => workflow.trim());
+    if (input.repo) {
+        const ownerRepo = {
+            owner: input.org,
+            repo: input.repo,
+        };
+        let workflowsIds = [];
+        if (input.workflows) {
+            workflowsIds = input.workflows.split(",").map((workflow) => workflow.trim());
+        }
+        else {
+            const { data: workflows } = await octokit.rest.actions.listRepoWorkflows(ownerRepo);
+            workflowsIds = workflows.workflows.map((workflow) => workflow.id);
+        }
+        (0, core_1.info)(`Getting usage for ${workflowsIds.length} workflows (in minutes)...`);
+        for (const workflowsId of workflowsIds) {
+            try {
+                const { data } = await octokit.rest.actions.getWorkflowUsage({
+                    ...ownerRepo,
+                    workflow_id: workflowsId,
+                });
+                const _usage = [
+                    data.billable?.UBUNTU?.total_ms,
+                    data.billable?.MACOS?.total_ms,
+                    data.billable?.WINDOWS?.total_ms
+                ].map((usage) => usage || 0);
+                const total = _usage.reduce((acc, curr) => acc + curr, 0);
+                usage.billable.UBUNTU.total_ms += _usage[0];
+                usage.billable.MACOS.total_ms += _usage[1];
+                usage.billable.WINDOWS.total_ms += _usage[2];
+                usage.billable.total_ms += total;
+                (0, core_1.startGroup)(`Workflow: ${workflowsId} - ${msToMinutes(total)}`);
+                (0, core_1.info)(`Ubuntu: ${msToMinutes(data.billable?.UBUNTU?.total_ms) || 0}`);
+                (0, core_1.info)(`MacOS: ${msToMinutes(data.billable?.MACOS?.total_ms) || 0}`);
+                (0, core_1.info)(`Windows: ${msToMinutes(data.billable?.WINDOWS?.total_ms) || 0}`);
+                (0, core_1.endGroup)();
+            }
+            catch (err) {
+                (0, core_1.info)(`Error getting usage for workflows: ${workflowsId}`);
+                (0, core_1.error)(JSON.stringify(err));
+            }
+        }
     }
     else {
-        const { data: workflows } = await octokit.rest.actions.listRepoWorkflows(ownerRepo);
-        workflowsIds = workflows.workflows.map((workflow) => workflow.id);
-    }
-    (0, core_1.info)(`Getting usage for ${workflowsIds.length} workflows...`);
-    for (const workflowsId of workflowsIds) {
-        try {
-            const { data } = await octokit.rest.actions.getWorkflowUsage({
-                ...ownerRepo,
-                workflow_id: workflowsId,
-            });
-            const _usage = [
-                data.billable?.UBUNTU?.total_ms,
-                data.billable?.MACOS?.total_ms,
-                data.billable?.WINDOWS?.total_ms
-            ].map((usage) => usage || 0);
-            const total = _usage.reduce((acc, curr) => acc + curr, 0);
-            usage.billable.UBUNTU.total_ms += _usage[0];
-            usage.billable.MACOS.total_ms += _usage[1];
-            usage.billable.WINDOWS.total_ms += _usage[2];
-            usage.billable.total_ms += total;
-            (0, core_1.startGroup)(`Workflow: ${workflowsId} - ${msToMinutes(total)} ms`);
-            (0, core_1.info)(`Ubuntu: ${msToMinutes(data.billable?.UBUNTU?.total_ms) || 0}`);
-            (0, core_1.info)(`MacOS: ${msToMinutes(data.billable?.MACOS?.total_ms) || 0}`);
-            (0, core_1.info)(`Windows: ${msToMinutes(data.billable?.WINDOWS?.total_ms) || 0}`);
-            (0, core_1.endGroup)();
-        }
-        catch (err) {
-            (0, core_1.info)(`Error getting usage for workflows: ${workflowsId}`);
-            (0, core_1.error)(JSON.stringify(err));
-        }
+        const { data } = await octokit.rest.billing.getGithubActionsBillingOrg({
+            org: input.org,
+        });
+        usage.billable.total_ms = data.total_minutes_used;
+        usage.billable.UBUNTU.total_ms = data.minutes_used_breakdown.UBUNTU || 0;
+        usage.billable.WINDOWS.total_ms = data.minutes_used_breakdown.WINDOWS || 0;
+        usage.billable.MACOS.total_ms = data.minutes_used_breakdown.MACOS || 0;
+        usage.billable.total_paid_minutes_used = data.total_paid_minutes_used;
+        usage.billable.included_minutes = data.included_minutes;
     }
     (0, core_1.info)(`✅ Completed!`);
     (0, core_1.info)(`Total Ubuntu: ${msToMinutes(usage.billable.UBUNTU.total_ms)}`);
     (0, core_1.info)(`Total MacOS: ${msToMinutes(usage.billable.MACOS.total_ms)}`);
     (0, core_1.info)(`Total Windows: ${msToMinutes(usage.billable.WINDOWS.total_ms)}`);
+    if (usage.billable.included_minutes) {
+        (0, core_1.info)(`Included minutes: ${usage.billable.included_minutes}`);
+    }
+    if (usage.billable.total_paid_minutes_used) {
+        (0, core_1.info)(`Total paid minutes used: ${usage.billable.total_paid_minutes_used}`);
+    }
     (0, core_1.info)(`Total: ${msToMinutes(usage.billable.total_ms)}`);
     (0, core_1.setOutput)("ubuntu", msToMinutes(usage.billable.UBUNTU.total_ms));
     (0, core_1.setOutput)("macos", msToMinutes(usage.billable.MACOS.total_ms));
     (0, core_1.setOutput)("windows", msToMinutes(usage.billable.WINDOWS.total_ms));
     (0, core_1.setOutput)("total", msToMinutes(usage.billable.total_ms));
+    (0, core_1.setOutput)("included_minutes", usage.billable.included_minutes);
+    (0, core_1.setOutput)("total_paid_minutes_used", usage.billable.total_paid_minutes_used);
 };
 exports.run = run;
 (0, exports.run)();
