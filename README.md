@@ -43,7 +43,7 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: austenstone/actions-usage@v1
+      - uses: austenstone/actions-usage@v1.1
         id: usage
         with:
           org: ${{ github.repository_owner }}
@@ -72,12 +72,12 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: austenstone/actions-usage@v1
+      - uses: austenstone/actions-usage@v1.1
         id: usage
       - name: Post to a Slack channel
         if: ${{ steps.usage.outputs.total > 50000 }}
         id: slack
-        uses: slackapi/slack-github-action@v1.26.0
+        uses: slackapi/slack-github-action@v1.1.26.0
         with:
           # Slack channel id, channel name, or user id to post message.
           # See also: https://api.slack.com/methods/chat.postMessage#channels
@@ -105,7 +105,7 @@ jobs:
     outputs:
       total: ${{ steps.usage.outputs.total }}
     steps:
-      - uses: austenstone/actions-usage@v1
+      - uses: austenstone/actions-usage@v1.1
         id: usage
         with:
           github-token: ${{ secrets.TOKEN }}
