@@ -61,9 +61,9 @@ export const run = async (): Promise<void> => {
     }
   }
 
-  setOutput("UBUNTU", usage.billable.UBUNTU?.total_ms || 0);
-  setOutput("MACOS", usage.billable.MACOS?.total_ms || 0);
-  setOutput("WINDOWS", usage.billable.WINDOWS?.total_ms || 0);
+  setOutput("UBUNTU", usage.billable?.UBUNTU?.total_ms || 0);
+  setOutput("MACOS", usage.billable?.MACOS?.total_ms || 0);
+  setOutput("WINDOWS", usage.billable?.WINDOWS?.total_ms || 0);
 };
 
 run();

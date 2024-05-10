@@ -29182,9 +29182,9 @@ const run = async () => {
             (0, core_1.error)(JSON.stringify(err));
         }
     }
-    (0, core_1.setOutput)("UBUNTU", usage.billable.UBUNTU?.total_ms || 0);
-    (0, core_1.setOutput)("MACOS", usage.billable.MACOS?.total_ms || 0);
-    (0, core_1.setOutput)("WINDOWS", usage.billable.WINDOWS?.total_ms || 0);
+    (0, core_1.setOutput)("UBUNTU", usage.billable?.UBUNTU?.total_ms || 0);
+    (0, core_1.setOutput)("MACOS", usage.billable?.MACOS?.total_ms || 0);
+    (0, core_1.setOutput)("WINDOWS", usage.billable?.WINDOWS?.total_ms || 0);
 };
 exports.run = run;
 (0, exports.run)();
