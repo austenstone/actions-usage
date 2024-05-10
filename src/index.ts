@@ -1,5 +1,5 @@
 import { getInput, info, error, setOutput, startGroup, endGroup, } from "@actions/core";
-import { getOctokit, context } from "@actions/github";
+import { getOctokit } from "@actions/github";
 
 interface Input {
   token: string;
