@@ -27,18 +27,56 @@ This endpoint can be used without authentication or the aforementioned permissio
 
 #### Example
 ```yml
-name: TypeScript Action Workflow
+name: Actions Usage
 on:
   schedule:
     - cron: '0 0 * * *'
 
 jobs:
   run:
-    name: Run Action
     runs-on: ubuntu-latest
     steps:
       - uses: austenstone/actions-usage@main
         id: usage
+      - run: echo "Total usage: ${{ steps.usage.outputs.total }}"
+      - if: ${{ steps.usage.outputs.total > 50000 }}
+        run: echo "Actions Usage is over 50,000 minutes!"
+```
+
+#### Example Notification Actions
+
+Use this action in combination with other actions to notify users.
+
+- [send-email](https://github.com/marketplace/actions/send-email)
+- [slack-send](https://github.com/marketplace/actions/slack-send)
+- [jira-create-issue](https://github.com/marketplace/actions/jira-create-issue)
+
+#### Example Notification Workflow
+```yml
+name: Actions Usage
+on:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: austenstone/actions-usage@main
+        id: usage
+      - name: Post to a Slack channel
+        if: ${{ steps.usage.outputs.total > 50000 }}
+        id: slack
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          # Slack channel id, channel name, or user id to post message.
+          # See also: https://api.slack.com/methods/chat.postMessage#channels
+          # You can pass in multiple channels to post to by providing a comma-delimited list of channel IDs.
+          channel-id: 'CHANNEL_ID,ANOTHER_CHANNEL_ID'
+          # For posting a simple plain text message
+          slack-message: "Your GitHub Actions usage is over 50,000 minutes!"
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 ```
 
 ## ➡️ Inputs

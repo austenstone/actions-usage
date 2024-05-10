@@ -1,14 +1,22 @@
-name: TypeScript Action
+name: Actions Usage
 author: Austen Stone
-description: A TypeScript Action
+description: Get GitHub Actions usage for a repository
 branding:
-  icon: "plus"
-  color: "blue"
+  icon: "dollar-sign"
+  color: "green"
 
 inputs:
   github-token:
     description: The GitHub token used to create an authenticated client
     default: ${{ github.token }}
+    required: false
+  org:
+    description: The org to use for the action
+    default: ${{ github.repository_owner }}
+    required: false
+  repo:
+    description: The repository to use for the action
+    default: ${{ github.repository }}
     required: false
 
 outputs:

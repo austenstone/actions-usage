@@ -4,11 +4,19 @@ import { getOctokit, context } from "@actions/github";
 interface Input {
   token: string;
   workflows: string;
+  org: string;
+  repo: string;
 }
 
 const getInputs = (): Input => {
   const result = {} as Input;
   result.token = getInput("github-token");
+  result.org = getInput("org");
+  result.repo = getInput("repo");
+  if (result.repo.includes("/")) {
+    const parts = result.repo.split("/");
+    result.repo = parts[1];
+  }
   result.workflows = getInput("workflows");
   if (!result.token || result.token === "") {
     throw new Error("github-token is required");
@@ -25,8 +33,8 @@ export const run = async (): Promise<void> => {
   const octokit = getOctokit(input.token);
 
   const ownerRepo = {
-    owner: context.repo.owner,
-    repo: context.repo.repo,
+    owner: input.org,
+    repo: input.repo,
   };
 
   let usage = {
