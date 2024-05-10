@@ -124,6 +124,8 @@ Various inputs are defined in [`action.yml`](action.yml):
 | --- | - | - |
 | github&#x2011;token | Token to use to authorize. | ${{&nbsp;github.token&nbsp;}} |
 | workflow | The workflow file name or id. | main.yml |
+| org | The organization name. | ${{&nbsp;github.repository_owner&nbsp;}} |
+| repo | The repository name. | ${{&nbsp;github.repository&nbsp;}} |
 
 ## ⬅️ Outputs
 | Name | Description |
