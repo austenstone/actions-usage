@@ -1,6 +1,6 @@
 # Actions Usage Action
 
-Get your GitHub Actions usage in minutes.
+Get your GitHub Actions usage in minutes for either a repository or a specific workflow.
 
 ## Usage
 Create a workflow (eg: `.github/workflows/seat-count.yml`). See [Creating a Workflow file](https://help.github.com/en/articles/configuring-a-workflow#creating-a-workflow-file).
