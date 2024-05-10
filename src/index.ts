@@ -1,4 +1,4 @@
-import { getInput, info, setOutput } from "@actions/core";
+import { getInput, info, error, setOutput } from "@actions/core";
 import { getOctokit, context } from "@actions/github";
 import { RestEndpointMethodTypes } from "@actions/github/node_modules/@octokit/plugin-rest-endpoint-methods";
 
@@ -38,18 +38,24 @@ export const run = async (): Promise<void> => {
   info(`Getting usage for workflows: ${workflowsIds.join(", ")}`);
 
   for (const workflowsId of workflowsIds) {
-    const { data } = await octokit.rest.actions.getWorkflowUsage({
-      ...ownerRepo,
-      workflow_id: workflowsId,
-    });
-    if (usage.billable.UBUNTU && data.billable.UBUNTU) {
-      usage.billable.UBUNTU.total_ms += data.billable.UBUNTU.total_ms || 0;
-    }
-    if (usage.billable.MACOS && data.billable.MACOS) {
-      usage.billable.MACOS.total_ms += data.billable.MACOS.total_ms || 0;
-    }
-    if (usage.billable.WINDOWS && data.billable.WINDOWS) {
-      usage.billable.WINDOWS.total_ms += data.billable.WINDOWS.total_ms || 0;
+    try {
+      const { data } = await octokit.rest.actions.getWorkflowUsage({
+        ...ownerRepo,
+        workflow_id: workflowsId,
+      });
+      
+      if (usage.billable.UBUNTU && data.billable.UBUNTU) {
+        usage.billable.UBUNTU.total_ms += data.billable.UBUNTU.total_ms || 0;
+      }
+      if (usage.billable.MACOS && data.billable.MACOS) {
+        usage.billable.MACOS.total_ms += data.billable.MACOS.total_ms || 0;
+      }
+      if (usage.billable.WINDOWS && data.billable.WINDOWS) {
+        usage.billable.WINDOWS.total_ms += data.billable.WINDOWS.total_ms || 0;
+      }
+    } catch (err) {
+      info(`Error getting usage for workflows: ${workflowsId}`);
+      error(JSON.stringify(err));
     }
   }
 
