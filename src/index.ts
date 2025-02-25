@@ -114,6 +114,7 @@ export const run = async (): Promise<void> => {
     info(`Total paid minutes used: ${usage.billable.total_paid_minutes_used}`);
   }
   info(`Total: ${msToMinutes(usage.billable.total_ms)}`);
+  setOutput("billable", usage.billable);
   setOutput("ubuntu", msToMinutes(usage.billable.UBUNTU.total_ms));
   setOutput("macos", msToMinutes(usage.billable.MACOS.total_ms));
   setOutput("windows", msToMinutes(usage.billable.WINDOWS.total_ms));
