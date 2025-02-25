@@ -51,15 +51,14 @@ export const run = async (): Promise<void> => {
     },
   };
   if (input.repo) {
-    const ownerRepo = {
-      owner: input.org,
-      repo: input.repo,
-    };
     let workflowsIds: (string | number)[] = [];
     if (input.workflows) {
       workflowsIds = input.workflows.split(",").map((workflow) => workflow.trim());
     } else {
-      const { data: workflows } = await octokit.rest.actions.listRepoWorkflows(ownerRepo);
+      const { data: workflows } = await octokit.rest.actions.listRepoWorkflows({
+        owner: input.org,
+        repo: input.repo,
+      });
       workflowsIds = workflows.workflows.map((workflow) => workflow.id);
     }
     info(`Getting usage for ${workflowsIds.length} workflows (in minutes)...`);
@@ -67,7 +66,8 @@ export const run = async (): Promise<void> => {
     for (const workflowsId of workflowsIds) {
       try {
         const { data } = await octokit.rest.actions.getWorkflowUsage({
-          ...ownerRepo,
+          owner: input.org,
+          repo: input.repo,
           workflow_id: workflowsId,
         });
   
@@ -102,11 +102,11 @@ export const run = async (): Promise<void> => {
     usage.billable.total_paid_minutes_used = data.total_paid_minutes_used;
     usage.billable.included_minutes = data.included_minutes;
   }
-
-  info(`✅ Completed!`);
-  info(`Total Ubuntu: ${msToMinutes(usage.billable.UBUNTU.total_ms)}`);
-  info(`Total MacOS: ${msToMinutes(usage.billable.MACOS.total_ms)}`);
-  info(`Total Windows: ${msToMinutes(usage.billable.WINDOWS.total_ms)}`);
+  
+  startGroup("Usage");
+  info(JSON.stringify(usage, null, 2));
+  endGroup();
+  
   if (usage.billable.included_minutes) {
     info(`Included minutes: ${usage.billable.included_minutes}`);
   }
