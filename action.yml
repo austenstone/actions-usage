@@ -16,6 +16,7 @@ inputs:
     required: false
   repo:
     description: The repository to use for the action
+    default: ${{ github.repository }}
     required: false
 
 outputs:
