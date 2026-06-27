@@ -1,8 +1,9 @@
 name: Usage
 on:
-  push:
-  pull_request:
   workflow_dispatch:
+
+# Disabled push/PR triggers 2026-06-27: TOKEN PAT secret is expired.
+# Re-enable after rotating TOKEN in repo Secrets. See github/austenstone-notes#456.
 
 jobs:
   run:
