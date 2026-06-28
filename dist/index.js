@@ -29879,7 +29879,7 @@ const msToMinutes = (ms) => {
 const run = async () => {
     const input = getInputs();
     const octokit = (0, github_1.getOctokit)(input.token);
-    let usage = {
+    const usage = {
         billable: {
             UBUNTU: {
                 total_ms: 0,
@@ -29967,7 +29967,9 @@ const run = async () => {
     (0, core_1.setOutput)("total_paid_minutes_used", usage.billable.total_paid_minutes_used);
 };
 exports.run = run;
-(0, exports.run)();
+if (!process.env.JEST_WORKER_ID) {
+    (0, exports.run)();
+}
 
 
 /***/ }),

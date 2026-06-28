@@ -34,7 +34,7 @@ export const run = async (): Promise<void> => {
   const input = getInputs();
   const octokit = getOctokit(input.token);
 
-  let usage = {
+  const usage = {
     billable: {
       UBUNTU: {
         total_ms: 0,
@@ -123,4 +123,7 @@ export const run = async (): Promise<void> => {
   setOutput("total_paid_minutes_used", usage.billable.total_paid_minutes_used);
 };
 
-run();
+// Don't auto-run under jest (tests spyOn after import)
+if (!process.env.JEST_WORKER_ID) {
+  run();
+}
