@@ -29879,7 +29879,7 @@ const msToMinutes = (ms) => {
 const run = async () => {
     const input = getInputs();
     const octokit = (0, github_1.getOctokit)(input.token);
-    let usage = {
+    const usage = {
         billable: {
             UBUNTU: {
                 total_ms: 0,

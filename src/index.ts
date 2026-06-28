@@ -34,7 +34,7 @@ export const run = async (): Promise<void> => {
   const input = getInputs();
   const octokit = getOctokit(input.token);
 
-  let usage = {
+  const usage = {
     billable: {
       UBUNTU: {
         total_ms: 0,
