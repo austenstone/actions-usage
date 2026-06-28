@@ -1,3 +1,0 @@
-{"total": {"lines":{"total":69,"covered":6,"skipped":0,"pct":8.69},"statements":{"total":73,"covered":7,"skipped":0,"pct":9.58},"functions":{"total":7,"covered":0,"skipped":0,"pct":0},"branches":{"total":30,"covered":0,"skipped":0,"pct":0},"branchesTrue":{"total":0,"covered":0,"skipped":0,"pct":"Unknown"}}
-,"/private/tmp/au-fix/src/index.ts": {"lines":{"total":69,"covered":6,"skipped":0,"pct":8.69},"functions":{"total":7,"covered":0,"skipped":0,"pct":0},"statements":{"total":73,"covered":7,"skipped":0,"pct":9.58},"branches":{"total":30,"covered":0,"skipped":0,"pct":0}}
-}
